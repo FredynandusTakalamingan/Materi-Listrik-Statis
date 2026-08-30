@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Media Pembelajaran Fisika SMA - Listrik Statis oleh Fredynandus Takalamingan, S.Si.">
+    <title>Listrik Statis - Media Pembelajaran Fisika SMA</title>
+    <style>
+        /* ==========================================================================
+           1. RESET & VARIABLES
+           ========================================================================== */
+        :root {
+            --bg-dark: #0d1117;
+            --bg-card: rgba(22, 27, 34, 0.75);
+            --bg-card-hover: rgba(30, 38, 48, 0.9);
+            --text-main: #f0f6fc;
+            --text-muted: #8b949e;
+            --accent-blue: #58a6ff;
+            --accent-cyan: #39c5bb;
+            --accent-pos: #ff5555;
+            --accent-neg: #4488ff;
+            --border-color: rgba(48, 54, 61, 0.8);
+            --glow-blue: rgba(88, 166, 255, 0.3);
+            --transition-speed: 0.3s;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+        }
+
+        body {
+            overflow-x: hidden;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            line-height: 1.6;
+        }
+
+        /* Background Canvas */
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        /* ==========================================================================
+           2. LOADING PAGE / SPLASH SCREEN
+           ========================================================================== */
+        #loading-page {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--bg-dark);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            padding: 2rem;
+            text-align: center;
+            transition: opacity 0.8s ease, visibility 0.8s ease;
+        }
+
+        #loading-page.fade-out {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .loading-header {
+            margin-top: 2rem;
+        }
+
+        .loading-title {
+            font-size: clamp(2.5rem, 6vw, 4rem);
+            font-weight: 800;
+            letter-spacing: 2px;
+            background: linear-gradient(135deg, var(--text-main), var(--accent-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 20px var(--glow-blue);
+        }
+
+        .loading-subtitle {
+            font-size: clamp(1rem, 2.5vw, 1.25rem);
+            color: var(--accent-cyan);
+            letter-spacing: 1px;
+            margin-top: 0.5rem;
+        }
+
+        /* Static Electricity Visual Animation */
+        .electro-visual {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 1rem 0;
+        }
+
+        .charge-core {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: radial-gradient(circle, var(--accent-pos) 0%, rgba(255,85,85,0.2) 70%);
+            box-shadow: 0 0 25px var(--accent-pos);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            font-size: 1.5rem;
+            color: #fff;
+            z-index: 2;
+        }
+
+        .orbit {
+            position: absolute;
+            border: 1px dashed rgba(88, 166, 255, 0.4);
+            border-radius: 50%;
+            animation: spin linear infinite;
+        }
+
+        .orbit-1 {
+            width: 120px;
+            height: 120px;
+            animation-duration: 4s;
+        }
+
+        .orbit-2 {
+            width: 180px;
+            height: 180px;
+            animation-duration: 7s;
+            animation-direction: reverse;
+        }
+
+        .electron {
+            position: absolute;
+            top: -6px;
+            left: 50%;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: var(--accent-neg);
+            box-shadow: 0 0 10px var(--accent-neg);
+            transform: translateX(-50%);
+        }
+
+        @keyframes spin {
+            100% { transform: rotate(360deg); }
+        }
+
+        .quote-container {
+            max-width: 600px;
+            margin: 1rem 0;
+            font-style: italic;
+            color: var(--text-muted);
+            font-size: clamp(0.9rem, 2vw, 1.1rem);
+            border-left: 3px solid var(--accent-cyan);
+            padding-left: 1rem;
+            text-align: left;
+        }
+
+        /* Enter Button */
+        .enter-btn {
+            background: linear-gradient(135deg, rgba(57, 197, 187, 0.2), rgba(88, 166, 255, 0.2));
+            border: 1px solid var(--accent-cyan);
+            color: var(--text-main);
+            padding: 1rem 2.5rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 50px;
+            cursor: pointer;
+            outline: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            box-shadow: 0 0 15px rgba(57, 197, 187, 0.3);
+            transition: all var(--transition-speed) ease;
+            animation: pulse 2s infinite;
+        }
+
+        .enter-btn:hover {
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+            color: #000;
+            box-shadow: 0 0 30px var(--accent-cyan);
+            transform: translateY(-2px) scale(1.03);
+            animation: none;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(57, 197, 187, 0.5); }
+            70% { box-shadow: 0 0 0 15px rgba(57, 197, 187, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(57, 197, 187, 0); }
+        }
+
+        .author-tag {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            letter-spacing: 0.5px;
+        }
+
+        /* ==========================================================================
+           3. MAIN LAYOUT & NAVBAR
+           ========================================================================== */
+        #main-content {
+            opacity: 0;
+            transition: opacity 1s ease;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        #main-content.visible {
+            opacity: 1;
+        }
+
+        .navbar {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background-color: rgba(13, 17, 23, 0.85);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-brand {
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1.5rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: color var(--transition-speed) ease;
+        }
+
+        .nav-links a:hover {
+            color: var(--accent-blue);
+        }
+
+        /* Mobile Menu Toggle */
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--text-main);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        /* ==========================================================================
+           4. HERO SECTION
+           ========================================================================== */
+        .hero {
+            padding: 5rem 2rem 3rem;
+            max-width: 1000px;
+            margin: 0 auto;
+            text-align: center;
+            position: relative;
+        }
+
+        .hero-title {
+            font-size: clamp(2.5rem, 5vw, 4.5rem);
+            font-weight: 800;
+            margin-bottom: 1rem;
+            background: linear-gradient(180deg, #ffffff, var(--text-muted));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-desc {
+            font-size: clamp(1rem, 2vw, 1.2rem);
+            color: var(--text-muted);
+            max-width: 750px;
+            margin: 0 auto 2rem;
+        }
+
+        /* Field Illustration Visual */
+        .field-illustration {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .field-charge {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            box-shadow: 0 0 15px rgba(255,255,255,0.2);
+        }
+
+        .field-charge.pos { background: var(--accent-pos); box-shadow: 0 0 15px var(--accent-pos); }
+        .field-charge.neg { background: var(--accent-neg); box-shadow: 0 0 15px var(--accent-neg); }
+
+        .field-line {
+            height: 2px;
+            width: 100px;
+            background: linear-gradient(90deg, var(--accent-pos), var(--accent-neg));
+            position: relative;
+        }
+
+        .field-line::after {
+            content: '►';
+            position: absolute;
+            right: 40%;
+            top: -9px;
+            color: var(--accent-cyan);
+            font-size: 12px;
+        }
+
+        /* ==========================================================================
+           5. CARDS / MODULE SECTION
+           ========================================================================== */
+        .modules-section {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            width: 100%;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .section-header h2 {
+            font-size: 1.8rem;
+            color: var(--text-main);
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2.5rem 2rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            backdrop-filter: blur(5px);
+            transition: transform var(--transition-speed) ease, border-color var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
+        }
+
+        .card:hover {
+            transform: translateY(-8px);
+            border-color: var(--accent-blue);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 20px var(--glow-blue);
+            background: var(--bg-card-hover);
+        }
+
+        .card-number {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--accent-cyan);
+            background: rgba(57, 197, 187, 0.1);
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+            border: 1px solid rgba(57, 197, 187, 0.2);
+        }
+
+        .card-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            background: rgba(88, 166, 255, 0.1);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            border: 1px solid rgba(88, 166, 255, 0.2);
+            transition: transform var(--transition-speed) ease;
+        }
+
+        .card:hover .card-icon {
+            transform: scale(1.1) rotate(5deg);
+            background: rgba(88, 166, 255, 0.2);
+        }
+
+        .card-icon svg {
+            width: 32px;
+            height: 32px;
+            fill: var(--accent-blue);
+        }
+
+        .card-title {
+            font-size: 1.4rem;
+            margin-bottom: 1rem;
+            color: var(--text-main);
+        }
+
+        .card-desc {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin-bottom: 2rem;
+            flex-grow: 1;
+        }
+
+        .card-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            padding: 0.8rem 1.2rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: all var(--transition-speed) ease;
+        }
+
+        .card-btn:hover {
+            background: var(--accent-blue);
+            color: #0d1117;
+            border-color: var(--accent-blue);
+        }
+
+        /* ==========================================================================
+           6. MOTIVATION SECTION
+           ========================================================================== */
+        .motivation-section {
+            max-width: 800px;
+            margin: 4rem auto;
+            padding: 2.5rem;
+            background: linear-gradient(135deg, rgba(13, 17, 23, 0.9), rgba(22, 27, 34, 0.9));
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .motivation-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent-pos), var(--accent-blue), var(--accent-cyan));
+        }
+
+        .motivation-title {
+            font-size: 1.25rem;
+            letter-spacing: 1px;
+            color: var(--accent-cyan);
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+        }
+
+        .motivation-quote {
+            font-size: 1.1rem;
+            color: var(--text-main);
+            line-height: 1.8;
+            font-style: italic;
+        }
+
+        .charge-particles-deco {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 1.5rem;
+        }
+
+        .mini-particle {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        /* ==========================================================================
+           7. FOOTER
+           ========================================================================== */
+        footer {
+            margin-top: auto;
+            border-top: 1px solid var(--border-color);
+            padding: 2rem;
+            text-align: center;
+            background-color: rgba(13, 17, 23, 0.95);
+        }
+
+        .footer-tag {
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 0.25rem;
+        }
+
+        .footer-sub {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .footer-author {
+            color: var(--accent-cyan);
+            font-size: 0.85rem;
+        }
+
+        /* ==========================================================================
+           8. RESPONSIVE DESIGN
+           ========================================================================== */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                width: 100%;
+                background-color: var(--bg-dark);
+                border-bottom: 1px solid var(--border-color);
+                flex-direction: column;
+                padding: 1rem 2rem;
+            }
+
+            .nav-links.active {
+                display: flex;
+            }
+
+            .menu-toggle {
+                display: block;
+            }
+
+            .hero {
+                padding: 3rem 1rem 2rem;
+            }
+
+            .field-illustration {
+                transform: scale(0.8);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Dynamic Background Canvas -->
+    <canvas id="bg-canvas"></canvas>
+
+    <!-- ==========================================================================
+       1. LOADING PAGE / HALAMAN PEMBUKA
+       ========================================================================== -->
+    <div id="loading-page">
+        <div class="loading-header">
+            <h1 class="loading-title">LISTRIK STATIS</h1>
+            <div class="loading-subtitle">Media Pembelajaran Fisika SMA</div>
+        </div>
+
+        <div class="electro-visual">
+            <div class="charge-core">+</div>
+            <div class="orbit orbit-1">
+                <div class="electron"></div>
+            </div>
+            <div class="orbit orbit-2">
+                <div class="electron"></div>
+            </div>
+        </div>
+
+        <div class="quote-container">
+            “Fisika bukan sekadar menghafal rumus, tetapi memahami bagaimana alam bekerja.”
+        </div>
+
+        <button class="enter-btn" id="enter-btn" aria-label="Klik untuk mulai belajar">
+            <span>⚡ KLIK UNTUK BELAJAR</span>
+        </button>
+
+        <div class="author-tag">
+            Desain oleh<br>
+            <strong>Fredynandus Takalamingan, S.Si.</strong>
+        </div>
+    </div>
+
+    <!-- ==========================================================================
+       HALAMAN UTAMA
+       ========================================================================== -->
+    <div id="main-content">
+        
+        <!-- Navigasi -->
+        <nav class="navbar">
+            <a href="#" class="nav-brand">⚡ LISTRIK STATIS</a>
+            <button class="menu-toggle" id="menu-toggle" aria-label="Toggle Navigation">☰</button>
+            <ul class="nav-links" id="nav-links">
+                <li><a href="#beranda">Beranda</a></li>
+                <li><a href="https://fredynandustakalamingan.github.io/Pembahasan-Gaya-Coulomb/" target="_blank">Gaya Coulomb</a></li>
+                <li><a href="https://fredynandustakalamingan.github.io/Medan-Listrik/" target="_blank">Kuat Medan Listrik</a></li>
+                <li><a href="https://fredynandustakalamingan.github.io/Potensial-Energi-Potensial-Listrik/" target="_blank">Potensial & Energi Listrik</a></li>
+            </ul>
+        </nav>
+
+        <!-- Hero Section -->
+        <section class="hero" id="beranda">
+            <h1 class="hero-title">LISTRIK STATIS</h1>
+            <p class="hero-desc">
+                Jelajahi konsep muatan listrik, gaya Coulomb, medan listrik, potensial listrik, dan energi potensial listrik melalui pembelajaran interaktif.
+            </p>
+            
+            <div class="field-illustration" aria-hidden="true">
+                <div class="field-charge pos">+</div>
+                <div class="field-line"></div>
+                <div class="field-charge neg">-</div>
+            </div>
+        </section>
+
+        <!-- Tiga Menu Utama -->
+        <main class="modules-section">
+            <div class="section-header">
+                <h2>Modul Pembelajaran</h2>
+            </div>
+            
+            <div class="cards-grid">
+                
+                <!-- MENU 1 -->
+                <article class="card">
+                    <span class="card-number">Modul 01</span>
+                    <div class="card-icon">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M7 2px;M17 2px;M7 12h10M12 2v20M5 9l-3 3 3 3M19 9l3 3-3 3"/>
+                            <circle cx="6" cy="12" r="3"/>
+                            <circle cx="18" cy="12" r="3"/>
+                        </svg>
+                    </div>
+                    <h3 class="card-title">GAYA COULOMB</h3>
+                    <p class="card-desc">
+                        Pelajari interaksi antara dua muatan listrik dan memahami faktor-faktor yang memengaruhi besar gaya Coulomb.
+                    </p>
+                    <a href="https://fredynandustakalamingan.github.io/Pembahasan-Gaya-Coulomb/" target="_blank" class="card-btn">
+                        <span>Mulai Belajar</span>
+                        <span>→</span>
+                    </a>
+                </article>
+
+                <!-- MENU 2 -->
+                <article class="card">
+                    <span class="card-number">Modul 02</span>
+                    <div class="card-icon">
+                        <svg viewBox="0 0 24 24">
+                            <circle cx="12" cy="12" r="4"/>
+                            <path d="M12 2v4M12 18v4M2 12h4M18 12h4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+                    <h3 class="card-title">KUAT MEDAN LISTRIK</h3>
+                    <p class="card-desc">
+                        Pelajari konsep medan listrik, kuat medan listrik, arah medan, serta hubungan medan listrik dengan muatan sumber.
+                    </p>
+                    <a href="https://fredynandustakalamingan.github.io/Medan-Listrik/" target="_blank" class="card-btn">
+                        <span>Mulai Belajar</span>
+                        <span>→</span>
+                    </a>
+                </article>
+
+                <!-- MENU 3 -->
+                <article class="card">
+                    <span class="card-number">Modul 03</span>
+                    <div class="card-icon">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <h3 class="card-title">POTENSIAL LISTRIK & ENERGI POTENSIAL LISTRIK</h3>
+                    <p class="card-desc">
+                        Pelajari konsep potensial listrik dan energi potensial listrik serta penerapannya dalam memahami interaksi muatan.
+                    </p>
+                    <a href="https://fredynandustakalamingan.github.io/Potensial-Energi-Potensial-Listrik/" target="_blank" class="card-btn">
+                        <span>Mulai Belajar</span>
+                        <span>→</span>
+                    </a>
+                </article>
+
+            </div>
+        </main>
+
+        <!-- Bagian Motivasi Belajar -->
+        <section class="motivation-section">
+            <h3 class="motivation-title">BELAJAR FISIKA DENGAN RASA INGIN TAHU</h3>
+            <p class="motivation-quote">
+                “Jangan hanya bertanya apa rumusnya.<br>
+                Tanyakan juga mengapa rumus itu berlaku,<br>
+                bagaimana konsepnya bekerja,<br>
+                dan di mana kita dapat menemukannya dalam kehidupan sehari-hari.”
+            </p>
+            <div class="charge-particles-deco">
+                <div class="mini-particle pos">+</div>
+                <div class="mini-particle neg">-</div>
+                <div class="mini-particle pos">+</div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer>
+            <div class="footer-tag">LISTRIK STATIS • FISIKA KELAS X</div>
+            <div class="footer-sub">Media Pembelajaran Fisika</div>
+            <div class="footer-author">Desain oleh Fredynandus Takalamingan, S.Si.</div>
+        </footer>
+
+    </div>
+
+    <!-- ==========================================================================
+       JAVASCRIPT (PURE JS)
+       ========================================================================== -->
+    <script>
+        // Transition Logic Loading -> Main Page
+        const enterBtn = document.getElementById('enter-btn');
+        const loadingPage = document.getElementById('loading-page');
+        const mainContent = document.getElementById('main-content');
+
+        enterBtn.addEventListener('click', () => {
+            loadingPage.classList.add('fade-out');
+            setTimeout(() => {
+                mainContent.classList.add('visible');
+            }, 300);
+        });
+
+        // Mobile Nav Toggle
+        const menuToggle = document.getElementById('menu-toggle');
+        const navLinks = document.getElementById('nav-links');
+
+        menuToggle.addEventListener('click', () => {
+            navLinks.classList.toggle('active');
+        });
+
+        // Interactive Background Canvas (Coulomb Field Animation)
+        const canvas = document.getElementById('bg-canvas');
+        const ctx = canvas.getContext('2d');
+
+        let width, height;
+        let particles = [];
+
+        function resizeCanvas() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        class Particle {
+            constructor() {
+                this.reset();
+            }
+
+            reset() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.vx = (Math.random() - 0.5) * 0.5;
+                this.vy = (Math.random() - 0.5) * 0.5;
+                this.radius = Math.random() * 2 + 1;
+                this.type = Math.random() > 0.5 ? '+' : '-';
+                this.color = this.type === '+' ? '#ff5555' : '#4488ff';
+                this.alpha = Math.random() * 0.5 + 0.2;
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+
+                if (this.x < 0 || this.x > width) this.vx *= -1;
+                if (this.y < 0 || this.y > height) this.vy *= -1;
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.globalAlpha = this.alpha;
+                ctx.shadowBlur = 8;
+                ctx.shadowColor = this.color;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+                ctx.globalAlpha = 1;
+            }
+        }
+
+        // Initialize particles
+        const particleCount = Math.min(Math.floor(window.innerWidth / 20), 50);
+        for (let i = 0; i < particleCount; i++) {
+            particles.push(new Particle());
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, width, height);
+
+            // Draw subtle field lines between close particles
+            for (let i = 0; i < particles.length; i++) {
+                particles[i].update();
+                particles[i].draw();
+
+                for (let j = i + 1; j < particles.length; j++) {
+                    const dx = particles[i].x - particles[j].x;
+                    const dy = particles[i].y - particles[j].y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+
+                    if (dist < 120) {
+                        ctx.beginPath();
+                        ctx.moveTo(particles[i].x, particles[i].y);
+                        ctx.lineTo(particles[j].x, particles[j].y);
+                        ctx.strokeStyle = particles[i].type !== particles[j].type 
+                            ? 'rgba(88, 166, 255, 0.15)' 
+                            : 'rgba(255, 85, 85, 0.05)';
+                        ctx.lineWidth = 0.8;
+                        ctx.stroke();
+                    }
+                }
+            }
+
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+    </script>
+</body>
+</html>
